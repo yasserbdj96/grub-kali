@@ -1,1 +1,70 @@
+#!/bin/bash
+#   |                                                         |   #
+# --+---------------------------------------------------------+-- #
+#   |    Code by: yasserbdj96                                 |   #
+#   |    Email: yasser.bdj96@gmail.com                        |   #
+#   |    GitHub: github.com/yasserbdj96                       |   #
+#   |    Sponsor: github.com/sponsors/yasserbdj96             |   #
+#   |    BTC: bc1q2dks8w8uurca5xmfwv4jwl7upehyjjakr3xga9      |   #
+#   |                                                         |   #
+#   |    All posts with #yasserbdj96                          |   #
+#   |    All views are my own.                                |   #
+# --+---------------------------------------------------------+-- #
+#   |                                                         |   #
 
+#START{
+source_script="$0"
+destination_path="/usr/local/bin/"
+
+# Check if the destination directory exists, create it if not
+if [ ! -d "$destination_path" ]; then
+    mkdir -p "$destination_path"
+fi
+
+# Define the destination file path
+destination_script="$destination_path$(basename "$source_script")"
+
+# Check if the destination file exists
+if [ ! -f "$destination_script" ]; then
+    # If it doesn't exist, copy the source script to the destination
+    cp "$source_script" "$destination_script"
+    echo "Script copied to $destination_script"
+#else
+#    echo "Script already exists at $destination_script"
+fi
+
+
+# Check if ImageMagick is installed
+if ! command -v identify &> /dev/null; then
+    echo "ImageMagick is not installed. Please install it to use this script."
+    apt install imagemagick
+    #exit 1
+fi
+
+# Check if an image file is provided as an argument
+if [ $# -ne 1 ]; then
+    echo "Usage: $0 <image_file>"
+    exit 1
+fi
+
+image_file="$1"
+
+# Get the image dimensions using identify
+dimensions=$(identify -format "%w %h" "$image_file")
+
+# Extract width and height
+width=$(echo "$dimensions" | cut -d ' ' -f 1)
+height=$(echo "$dimensions" | cut -d ' ' -f 2)
+
+# Check if the aspect ratio is 16:9
+if [ $((width * 9)) -eq $((height * 16)) ]; then
+    echo "The image has a 16:9 aspect ratio."
+    #rm "/boot/grub/themes/kali/grub-16x9.png"
+    cp -r "$image_file" "/boot/grub/themes/kali/grub-16x9.png"
+    cp -r "$image_file" "/boot/grub/background_ii.png"
+    update-grub
+    #apt-get update -y
+else
+    echo "The image does not have a 16:9 aspect ratio."
+fi
+#}END.
